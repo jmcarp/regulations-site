@@ -97,6 +97,34 @@ else {
 
         hasPushState: true
     });
+
+    var History = Backbone.History.extend({
+      navigate: function(fragment, options) {
+        if (!Backbone.History.started) return false;
+        if (!options || options === true) options = {trigger: !!options};
+
+        // Normalize the fragment.
+        fragment = this.getFragment(fragment || '');
+
+        // Don't include a trailing slash on the root.
+        var rootPath = this.root;
+        if (fragment === '' || fragment.charAt(0) === '?') {
+          rootPath = rootPath.slice(0, -1) || '/';
+        }
+        var url = rootPath + fragment;
+
+        // Decode for matching.
+        fragment = this.decodeFragment(fragment);
+
+        if (this.fragment === fragment) return;
+        this.fragment = fragment;
+
+        this.history[options.replace ? 'replaceState' : 'pushState']({}, document.title, url);
+        if (options.trigger) return this.loadUrl(fragment);
+      }
+    });
+    Backbone.history = new History();
+
 }
 
 var router = new RegsRouter();
